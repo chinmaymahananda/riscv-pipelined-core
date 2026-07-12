@@ -1,5 +1,7 @@
 ﻿# RISC-V Pipelined Core -- Full Open-Source ASIC Flow
 
+[![RISC-V Core Testbench](https://github.com/chinmaymahananda/riscv-pipelined-core/actions/workflows/test.yml/badge.svg)](https://github.com/chinmaymahananda/riscv-pipelined-core/actions/workflows/test.yml)
+
 A 4-stage pipelined RV32I subset core (IF -> EX -> MEM -> WB), carried
 through a complete open-source ASIC flow -- Yosys synthesis, OpenROAD
 place-and-route, Sky130 PDK -- to signed-off GDSII.
