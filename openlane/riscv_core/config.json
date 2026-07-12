@@ -1,15 +1,15 @@
 {
     "DESIGN_NAME": "riscv_core",
     "VERILOG_FILES": [
-        "dir::../../../rtl/regfile.v",
-        "dir::../../../rtl/alu.v",
-        "dir::../../../rtl/imem.v",
-        "dir::../../../rtl/dmem.v",
-        "dir::../../../rtl/riscv_core.v"
+        "dir::rtl/regfile.v",
+        "dir::rtl/alu.v",
+        "dir::rtl/imem.v",
+        "dir::rtl/dmem.v",
+        "dir::rtl/riscv_core.v"
     ],
     "CLOCK_PORT": "clk",
     "CLOCK_NET": "clk",
-    "CLOCK_PERIOD": 10,
+    "CLOCK_PERIOD": 3,
     "FP_SIZING": "absolute",
     "DIE_AREA": "0 0 800 800",
     "PL_TARGET_DENSITY": 0.45,

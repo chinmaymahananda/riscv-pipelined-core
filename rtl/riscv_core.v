@@ -2,7 +2,16 @@
 // See docs/ARCHITECTURE.md for the full design writeup.
 module riscv_core (
     input wire clk,
-    input wire rst_n
+    input wire rst_n,
+    // Debug/writeback outputs -- required so synthesis has an observable
+    // sink for the pipeline's logic. Without these, nothing in this module
+    // reaches a module boundary, and a synthesis tool correctly treats the
+    // entire design as dead logic and optimizes it away to nothing (this is
+    // exactly what happened on the first real synthesis attempt: 0 cells).
+    output wire        dbg_wb_we,
+    output wire [4:0]  dbg_wb_waddr,
+    output wire [31:0] dbg_wb_wdata,
+    output wire [31:0] dbg_pc
 );
     // ---------------- opcodes ----------------
     localparam OP_RTYPE  = 7'b0110011;
@@ -90,7 +99,7 @@ module riscv_core (
     wire [31:0] wb_wdata;
 
     regfile u_regfile (
-        .clk(clk), .rst_n(rst_n), .we(wb_we), .waddr(wb_waddr), .wdata(wb_wdata),
+        .clk(clk), .we(wb_we), .waddr(wb_waddr), .wdata(wb_wdata),
         .raddr1(rs1), .raddr2(rs2), .rdata1(reg_rdata1), .rdata2(reg_rdata2)
     );
 
@@ -164,7 +173,11 @@ module riscv_core (
 
     // ================= EX/MEM pipeline register =================
     always @(posedge clk or negedge rst_n) begin
-        if (!rst_n || stall) begin
+        if (!rst_n) begin
+            ex_mem_reg_write <= 1'b0;
+            ex_mem_mem_read  <= 1'b0;
+            ex_mem_mem_write <= 1'b0;
+        end else if (stall) begin
             ex_mem_reg_write <= 1'b0;
             ex_mem_mem_read  <= 1'b0;
             ex_mem_mem_write <= 1'b0;
@@ -213,5 +226,11 @@ module riscv_core (
                       (mem_wb_wb_sel == 2'b10) ? mem_wb_pc_plus4  :
                                                   mem_wb_alu_result;
 
+    assign dbg_wb_we    = wb_we;
+    assign dbg_wb_waddr = wb_waddr;
+    assign dbg_wb_wdata = wb_wdata;
+    assign dbg_pc       = pc;
+
 endmodule
+
 
