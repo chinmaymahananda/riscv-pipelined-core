@@ -1,0 +1,23 @@
+name: RISC-V Core Testbench (Icarus Verilog)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  core-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+
+      - name: Compile RTL + testbench
+        run: iverilog -o tb/sim.out rtl/regfile.v rtl/alu.v rtl/imem.v rtl/dmem.v rtl/riscv_core.v tb/tb_riscv_core.v
+
+      - name: Run bit-exact golden-model check
+        working-directory: tb
+        run: vvp sim.out | tee out.log && grep -q "PASS: all 15 written registers bit-exact match golden model" out.log
