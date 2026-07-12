@@ -20,4 +20,6 @@ jobs:
 
       - name: Run bit-exact golden-model check
         working-directory: tb
-        run: vvp sim.out | tee out.log && grep -q "PASS: all 15 written registers bit-exact match golden model" out.log
+        run: |
+          vvp sim.out | tee out.log
+          grep -q "PASS: all 15 written registers bit-exact match golden model" out.log
