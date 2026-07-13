@@ -1,51 +1,41 @@
-# Running the ASIC flow (OpenLane + Sky130)
+# Running the ASIC Flow (OpenLane + Sky130)
 
-**Status: prepared, not yet run.** I wrote config.json (riscv_core/) from
-standard OpenLane conventions, but I have not been able to actually
-execute this yet -- that needs Docker, which isn''t installed on this
-machine as of this writing. Treat the commands below as a starting
-point, not a verified recipe -- the first real run will likely need
-some adjustment (die area sizing especially, since 800x800 is a
-placeholder guess, not something derived from an actual utilization
-report), and I''ll do that once we can actually run it and read the
-real tool output.
+This design was carried through a full RTL-to-GDSII flow using OpenLane
+(Yosys synthesis + OpenROAD place-and-route) against the Sky130 PDK, at two
+operating points — see [`RESULTS.md`](riscv_core/RESULTS.md) for the complete
+numbers: clean signoff (0 DRC, 0 LVS, 0 routing violations) at both a 100 MHz
+baseline and a 333 MHz optimized target, including an honestly-documented
+failed stretch attempt at 500 MHz that pinned down where this design's real
+timing wall sits.
 
-## One-time setup (after Docker is installed)
+`riscv_core/config.json` is the OpenLane configuration actually used for
+that run.
+
+## Reproducing the flow
 
 ```bash
 git clone https://github.com/The-OpenROAD-Project/OpenLane.git
 cd OpenLane
-make pdk        # downloads the Sky130 PDK -- this is a large download,
-                # budget real time for it, don''t assume it''s instant
+make pdk        # downloads the Sky130 PDK (large download)
 make openlane   # builds/pulls the OpenLane docker image
 ```
-
-## Running this design
-
-The exact way OpenLane wants the design directory referenced (copied
-into `OpenLane/designs/`, symlinked, or passed via a flag) depends on
-the OpenLane version that ends up installed -- I''m intentionally not
-pretending certainty here. Once Docker is up, the concrete plan is:
 
 ```bash
 cp -r /path/to/riscv-pipelined-core/openlane/riscv_core OpenLane/designs/riscv_core
 cd OpenLane
-make mount   # drops into the OpenLane docker container
+make mount
 ./flow.tcl -design riscv_core
 ```
 
-If `flow.tcl` doesn''t recognize a flag or a config key, that''s expected
-on a first real run against a config I couldn''t test -- send me the
-actual error text and I''ll fix the config against real tool output,
-the same way we debugged the CNN accelerator chaining.
+To reproduce the 333 MHz result specifically, set `CLOCK_PERIOD` to `3` in
+`riscv_core/config.json` before running (the baseline config targets 100 MHz
+/ 10 ns).
 
-## What "done" looks like
+## What a successful run produces
 
-A successful run produces, among other things:
-- `runs/<run_tag>/results/final/gds/riscv_core.gds` (final layout)
-- Timing report: achieved Fmax (clock period vs. the 10ns target above)
+- `runs/<run_tag>/results/final/gds/riscv_core.gds` — final layout
+- Timing report — achieved Fmax vs. the `CLOCK_PERIOD` constraint
 - Power report
 - Area/utilization report
 
-Those three numbers (Fmax, power, area) are what turn this from "RTL
-that simulates correctly" into a resume line with real PPA data.
+These are the numbers summarized in `RESULTS.md`.
